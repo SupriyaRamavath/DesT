@@ -1,0 +1,14 @@
+const express = require("express");
+const { requireAuth } = require("../middleware/authMiddleware");
+const controller = require("../controllers/analyticsController");
+const router = express.Router();
+router.use(requireAuth);
+router.get("/dashboard", controller.dashboard);
+router.get("/decisions", controller.grouped);
+router.get("/risk", controller.grouped);
+router.get("/confidence", controller.grouped);
+router.get("/applications", controller.applications);
+router.get("/reviews", controller.reviews);
+router.get("/summary", controller.summary);
+router.get("/overview", controller.dashboard);
+module.exports = router;

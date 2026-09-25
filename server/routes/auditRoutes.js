@@ -1,0 +1,12 @@
+const express = require("express");
+const { requireAuth } = require("../middleware/authMiddleware");
+const { requireRole } = require("../middleware/roleMiddleware");
+const controller = require("../controllers/auditController");
+const router = express.Router();
+router.use(requireAuth, requireRole("admin", "reviewer"));
+router.get("/", controller.listAuditLogs);
+router.get("/stats", controller.stats);
+router.get("/decision/:id", controller.related);
+router.get("/application/:id", controller.related);
+router.get("/:id", controller.getAuditLog);
+module.exports = router;
