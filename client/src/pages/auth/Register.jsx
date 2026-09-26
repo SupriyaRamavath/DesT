@@ -13,7 +13,6 @@ function Register() {
     name: "",
     email: "",
     password: "",
-    role: "Developer",
   });
 
   const handleChange = (e) => {
@@ -28,7 +27,7 @@ function Register() {
 
     setLoading(true);
     setError("");
-    register({ ...formData, role: formData.role.toLowerCase() })
+    register(formData)
       .then(() => navigate("/dashboard"))
       .catch((requestError) => setError(requestError.response?.data?.message || "Unable to create account."))
       .finally(() => setLoading(false));
@@ -67,20 +66,6 @@ function Register() {
             value={formData.email}
             onChange={handleChange}
           />
-        </div>
-
-        <div className="form-group">
-          <label>Role</label>
-
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-          >
-            <option>Developer</option>
-            <option>Reviewer</option>
-            <option>Admin</option>
-          </select>
         </div>
 
         <div className="form-group">

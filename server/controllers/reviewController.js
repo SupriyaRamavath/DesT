@@ -37,7 +37,7 @@ async function listReviews(req, res, next) {
     }
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
     const reviews = await HumanReview.find(query)
-      .populate("decision", "externalDecisionId title status riskLevel application")
+      .populate({ path: "decision", select: "externalDecisionId title status riskLevel confidence input output application createdAt", populate: { path: "application", select: "name" } })
       .populate("reviewer", "name email role")
       .sort({ createdAt: -1 }).limit(limit);
     return res.json({ success: true, data: reviews });
@@ -47,7 +47,7 @@ async function listReviews(req, res, next) {
 async function getReview(req, res, next) {
   try {
     const review = await HumanReview.findById(req.params.id)
-      .populate("decision", "externalDecisionId title status riskLevel application")
+      .populate({ path: "decision", select: "externalDecisionId title status riskLevel confidence input output application createdAt", populate: { path: "application", select: "name" } })
       .populate("reviewer", "name email role");
     if (!review) return res.status(404).json({ success: false, message: "Review not found." });
     if (!isPrivileged(req.user) && !(await decisionForUser(review.decision._id, req.user))) {

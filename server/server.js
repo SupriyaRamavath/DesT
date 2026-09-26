@@ -18,6 +18,7 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const auditRoutes = require("./routes/auditRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -55,14 +56,14 @@ app.use(express.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Welcome to DecisionTrace API",
+    message: "Welcome to DesT API",
   });
 });
 
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "DecisionTrace API is running",
+    message: "DesT API is running",
   });
 });
 
@@ -72,6 +73,7 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/audit-logs", auditRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
@@ -82,11 +84,11 @@ async function startServer() {
 
     server.listen(env.port, () => {
       console.log(
-        `DecisionTrace server running on http://localhost:${env.port}`
+        `DesT server running on http://localhost:${env.port}`
       );
     });
   } catch (error) {
-    console.error("Unable to start DecisionTrace server:", error.message);
+    console.error("Unable to start DesT server:", error.message);
     process.exitCode = 1;
   }
 }

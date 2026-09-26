@@ -10,7 +10,7 @@ function Navbar() {
     <header className="navbar">
       <div className="navbar-brand">
         <Link to="/dashboard">
-          <strong>DecisionTrace</strong>
+          <strong>DesT</strong>
         </Link>
       </div>
 

@@ -65,7 +65,7 @@ function Sidebar() {
           </div>
 
           <div>
-            <strong>DecisionTrace</strong>
+            <strong>DesT</strong>
             <small>AI Decision Audit</small>
           </div>
         </Link>

@@ -66,6 +66,50 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.get("/:id", async (req, res, next) => {
+  try {
+    const app = await AIApplication.findOne({ _id: req.params.id, ...ownerFilter(req.user) }).lean();
+    if (!app) return res.status(404).json({ success: false, message: "Application not found." });
+    const [decisions, riskCounts, aggregateStats] = await Promise.all([
+      Decision.find({ application: app._id }).sort({ createdAt: -1 }).limit(20).select("externalDecisionId output confidence riskLevel status createdAt").lean(),
+      Decision.aggregate([
+        { $match: { application: app._id } },
+        { $group: { _id: "$riskLevel", count: { $sum: 1 } } },
+      ]),
+      Decision.aggregate([
+        { $match: { application: app._id } },
+        { $group: { _id: null, total: { $sum: 1 }, highRisk: { $sum: { $cond: [{ $in: ["$riskLevel", ["high", "critical"]] }, 1, 0] } }, averageConfidence: { $avg: "$confidence" }, reviewRequired: { $sum: { $cond: [{ $or: [{ $eq: ["$status", "flagged"] }, { $eq: ["$output.decision", "human_review"] }] }, 1, 0] } } } },
+      ]),
+    ]);
+    const aggregate = aggregateStats[0] || { total: 0, highRisk: 0, averageConfidence: null, reviewRequired: 0 };
+    return res.json({
+      success: true,
+      data: {
+        application: { ...app, apiKeyHash: undefined },
+        decisions,
+        stats: {
+          totalDecisions: aggregate.total,
+          decisionsToday: await Decision.countDocuments({ application: app._id, createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) } }),
+          highRisk: aggregate.highRisk,
+          averageConfidence: aggregate.averageConfidence,
+          reviewRequired: aggregate.reviewRequired,
+          riskDistribution: riskCounts,
+        },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/:id/activate", async (req, res, next) => {
+  return changeStatus(req, res, next, "active");
+});
+
+router.patch("/:id/deactivate", async (req, res, next) => {
+  return changeStatus(req, res, next, "inactive");
+});
+
 router.patch("/:id", async (req, res, next) => {
   try {
     const app = await AIApplication.findOneAndUpdate(
@@ -79,6 +123,20 @@ router.patch("/:id", async (req, res, next) => {
     return next(error);
   }
 });
+
+async function changeStatus(req, res, next, status) {
+  try {
+    const app = await AIApplication.findOneAndUpdate(
+      { _id: req.params.id, ...ownerFilter(req.user) },
+      { $set: { status } },
+      { new: true, runValidators: true }
+    ).lean();
+    if (!app) return res.status(404).json({ success: false, message: "Application not found." });
+    return res.json({ success: true, data: { ...app, apiKeyHash: undefined } });
+  } catch (error) {
+    return next(error);
+  }
+}
 
 router.delete("/:id", async (req, res, next) => {
   try {

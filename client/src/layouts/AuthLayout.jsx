@@ -1,22 +1,14 @@
 import { Outlet, Link } from "react-router";
+import BrandLogo from "../components/common/BrandLogo";
 
 function AuthLayout() {
   return (
-    <div className="auth-layout">
-
-      <div className="auth-brand">
-        <Link to="/login">
-          <div className="brand-logo">D</div>
-          <div>
-            <h2>DecisionTrace</h2>
-            <p>AI Decision Observability</p>
-          </div>
-        </Link>
-      </div>
-
+    <main className="simple-page">
+      <Link className="simple-brand" to="/" aria-label="DesT home">
+        <BrandLogo />
+      </Link>
       <Outlet />
-
-    </div>
+    </main>
   );
 }
 

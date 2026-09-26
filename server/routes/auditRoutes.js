@@ -3,7 +3,7 @@ const { requireAuth } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/roleMiddleware");
 const controller = require("../controllers/auditController");
 const router = express.Router();
-router.use(requireAuth, requireRole("admin", "reviewer"));
+router.use(requireAuth, requireRole("admin", "reviewer", "developer"));
 router.get("/", controller.listAuditLogs);
 router.get("/stats", controller.stats);
 router.get("/decision/:id", controller.related);

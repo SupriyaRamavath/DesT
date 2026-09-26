@@ -145,6 +145,17 @@ router.post("/ingest", async (req, res, next) => {
         durationMs: event.duration ?? null,
       }));
       if (events.length) await DecisionEvent.insertMany(events, { session });
+      if (Array.isArray(body.evidence) && body.evidence.length) {
+        const evidence = body.evidence.map((item) => ({
+          decision: decision._id,
+          title: item.title || "Evidence",
+          source: item.source || "Unspecified source",
+          content: item.description || item.content || "",
+          relevanceScore: item.reliability ?? null,
+          metadata: item.metadata || null,
+        }));
+        await Evidence.insertMany(evidence, { session });
+      }
       await AuditLog.create([{
         actor: application.owner,
         action: "decision_ingested",

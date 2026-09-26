@@ -1,176 +1,55 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
-import Loading from "../components/common/Loading";
-import ErrorMessage from "../components/common/ErrorMessage";
-import { getDecisionReplay } from "../services/decisionService";
+import api from "../services/api";
+
+const stages = ["INPUT", "PROCESSING", "EVIDENCE", "ANALYSIS", "CONFIDENCE", "RISK", "DECISION", "HUMAN REVIEW", "FINAL OUTCOME"];
 
 function DecisionReplay() {
   const { id } = useParams();
-  const [replay, setReplay] = useState(null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [data, setData] = useState(null);
+  const [current, setCurrent] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadReplay = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await getDecisionReplay(id);
-      setReplay(response.data || null);
-      setCurrentStep(0);
-    } catch (loadError) {
-      setError(loadError.response?.data?.message || "Unable to load decision replay.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     let active = true;
-    getDecisionReplay(id)
-      .then((response) => {
-        if (active) {
-          setReplay(response.data || null);
-          setCurrentStep(0);
-        }
-      })
-      .catch((loadError) => {
-        if (active) setError(loadError.response?.data?.message || "Unable to load decision replay.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    api.get(`/decisions/${id}/replay`).then((response) => active && setData(response.data.data)).catch(() => active && setError("Replay data could not be loaded. Return to Decisions and select an existing record.")).finally(() => active && setLoading(false));
     return () => { active = false; };
   }, [id]);
 
-  if (loading) return <Loading message="Loading decision replay..." />;
-  if (error) return <ErrorMessage message={error} onRetry={loadReplay} />;
+  const events = data?.events || [];
+  const event = events[current];
+  const complete = current === events.length - 1;
 
-  const steps = replay?.events || [];
-  const step = steps[currentStep];
+  useEffect(() => {
+    if (!playing) return undefined;
+    const timer = window.setInterval(() => setCurrent((value) => {
+      if (value >= events.length - 1) { setPlaying(false); return value; }
+      return value + 1;
+    }), 1800 / speed);
+    return () => window.clearInterval(timer);
+  }, [events.length, playing, speed]);
 
-  if (!steps.length) {
-    return (
-      <div>
-        <div className="breadcrumb"><Link to="/decisions">Decisions</Link><span>/</span><span>{id} / Replay</span></div>
-        <div className="page-header"><div><h1>Decision Replay</h1><p>No replay events have been recorded for this decision.</p></div></div>
-      </div>
-    );
-  }
+  const progress = useMemo(() => Math.round(((current + 1) / events.length) * 100), [current, events.length]);
+  if (loading) return <main className="dashboard-main-panel"><div className="dashboard-empty">Loading decision replay...</div></main>;
+  if (error || !data) return <main className="dashboard-main-panel"><div className="detail-back"><Link to="/decisions">← Back to Decisions</Link></div><div className="dashboard-empty"><strong>{error || "Replay not found."}</strong></div></main>;
+  if (!events.length) return <main className="dashboard-main-panel"><div className="detail-back"><Link to={`/decisions/${id}`}>← Back to Decision</Link></div><div className="dashboard-empty"><strong>No replay events have been recorded.</strong><p>Ingest events for this decision before starting replay.</p></div></main>;
+  const decision = data?.decision || {};
 
-  return (
-    <div>
-
-      <div className="breadcrumb">
-        <Link to="/decisions">Decisions</Link>
-        <span>/</span>
-        <Link to={`/decisions/${id}`}>
-          {id}
-        </Link>
-        <span>/ Replay</span>
-      </div>
-
-      <div className="page-header">
-
-        <div>
-          <h1>Decision Replay</h1>
-          <p>
-            Reconstructing the decision journey for {id}.
-          </p>
-        </div>
-
-        <span className="live-badge">
-          ● Replay Mode
-        </span>
-
-      </div>
-
-      <div className="replay-container">
-
-        <div className="replay-sidebar">
-
-          <h3>Decision Journey</h3>
-
-          {steps.map((item, index) => (
-
-            <button
-              key={item._id || item.sequence || index}
-              className={
-                currentStep === index
-                  ? "replay-step active"
-                  : "replay-step"
-              }
-              onClick={() => setCurrentStep(index)}
-            >
-
-              <span className="step-number">
-                {index + 1}
-              </span>
-
-              <span>
-                <strong>{item.name || item.title || `Event ${index + 1}`}</strong>
-                <small>{item.type}</small>
-              </span>
-
-            </button>
-
-          ))}
-
-        </div>
-
-        <div className="replay-main">
-
-          <div className="replay-counter">
-            Step {currentStep + 1} of {steps.length}
-          </div>
-
-          <div className="replay-event-card">
-
-            <div className="event-type">
-              {step.type}
-            </div>
-
-            <h2>{step.name || step.title}</h2>
-
-            <p>{step.description || "No description recorded."}</p>
-
-            <div className="event-data">
-              <span>Recorded Data</span>
-              <strong>{typeof step.data === "object" ? JSON.stringify(step.data) : step.data || "No data recorded."}</strong>
-            </div>
-
-          </div>
-
-          <div className="replay-controls">
-
-            <button
-              className="secondary-button"
-              disabled={currentStep === 0}
-              onClick={() =>
-                setCurrentStep((prev) => prev - 1)
-              }
-            >
-              ← Previous
-            </button>
-
-            <button
-              className="primary-button"
-              disabled={currentStep === steps.length - 1}
-              onClick={() =>
-                setCurrentStep((prev) => prev + 1)
-              }
-            >
-              Next →
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  );
+  return <main className="dashboard-main-panel replay-page">
+    <div className="detail-back"><Link to={`/decisions/${id}`}>← Back to Decision</Link></div>
+    <header className="detail-header"><div><p className="eyebrow">FORENSIC RECONSTRUCTION</p><h1>Decision Replay</h1><p className="dashboard-subtitle">Reconstruct the decision from input to final outcome.</p></div><span className="replay-status">{complete ? "● Replay Complete" : "● Replay Ready"}</span></header>
+    <section className="replay-meta"><div><span>Decision ID</span><strong>{decision.externalDecisionId || id}</strong></div><div><span>Application</span><strong>{decision.application?.name || "Unknown application"}</strong></div><div><span>Final decision</span><strong>{resultLabel(decision.output?.decision)}</strong></div><div><span>Confidence</span><strong>{decision.confidence == null ? "—" : `${Math.round(decision.confidence * 100)}%`}</strong></div><div><span>Risk</span><strong className={decision.riskLevel}>{capitalize(decision.riskLevel)}</strong></div></section>
+    <div className="replay-layout"><section className="replay-timeline-card"><div className="replay-progress"><span>Progress</span><b>{progress}%</b><div><i style={{ width: `${progress}%` }} /></div></div><div className="forensic-timeline">{events.map((item, index) => <button type="button" className={`forensic-step ${index === current ? "active" : ""} ${index < current ? "completed" : ""}`} onClick={() => setCurrent(index)} key={item._id || index}><span className="forensic-number">{index < current ? "✓" : index + 1}</span><div><strong>{item.type || stages[index]}</strong><span>{item.name || `Stage ${index + 1}`}</span><small>{formatDate(item.timestamp)} · {item.durationMs ? `${item.durationMs} ms` : "—"}</small></div></button>)}</div></section><aside className="event-details-card"><p className="eyebrow">EVENT DETAILS</p><h2>{event.name || event.type}</h2><span className="event-type">{event.type}</span><div className="event-detail-list"><span>Event ID <b>{event._id || "—"}</b></span><span>Timestamp <b>{formatDate(event.timestamp)}</b></span><span>Duration <b>{event.durationMs ? `${event.durationMs} ms` : "—"}</b></span><span>Description <b>{event.description || "No description recorded."}</b></span><span>Input / output <b>{stringify(event.data)}</b></span><span>Evidence references <b>{data?.evidence?.length || 0} attached records</b></span><span>Confidence <b>{decision.confidence == null ? "—" : `${Math.round(decision.confidence * 100)}%`}</b></span><span>Risk <b>{capitalize(decision.riskLevel)}</b></span></div></aside></div>
+    <section className="replay-controls-card"><button className="secondary-button" disabled={current === 0} onClick={() => setCurrent((value) => value - 1)} type="button">← Previous</button><button className="primary-button" onClick={() => setPlaying((value) => !value)} type="button">{playing ? "Ⅱ Pause" : "▶ Play"}</button><button className="secondary-button" disabled={complete} onClick={() => setCurrent((value) => value + 1)} type="button">Next →</button><button className="secondary-button" onClick={() => setCurrent(0)} type="button">↺ Restart</button><label>Speed <select value={speed} onChange={(event) => setSpeed(Number(event.target.value))}><option value="0.5">0.5x</option><option value="1">1x</option><option value="2">2x</option></select></label></section>
+    <div className="replay-footer-actions"><Link to={`/decisions/${id}`}>Back to Decision</Link><button type="button">View Evidence</button><button type="button">View Audit Trail</button><button type="button">Request Human Review</button></div>
+  </main>;
 }
 
+function stringify(value) { if (!value) return "Not recorded"; return typeof value === "string" ? value : JSON.stringify(value); }
+function formatDate(value) { return value ? new Date(value).toLocaleString() : "Not recorded"; }
+function resultLabel(value) { return { human_review: "Review Required", approved: "Approved", rejected: "Rejected" }[value] || capitalize(value || "Pending"); }
+function capitalize(value) { return String(value || "").replace("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()); }
 export default DecisionReplay;

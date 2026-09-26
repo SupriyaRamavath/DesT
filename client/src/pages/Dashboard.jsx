@@ -63,7 +63,7 @@ function Dashboard() {
     <div>
       <div className="page-header">
         <div><h1>Dashboard</h1><p>Monitor AI decisions, risks, and review activity.</p></div>
-        <Link to="/applications" className="primary-button">+ Add Application</Link>
+        <Link to="/applications" className="primary-button action-accent">+ Add Application</Link>
       </div>
       {error && <p className="error-message">{error}</p>}
       <div className="stats-grid">
@@ -85,7 +85,7 @@ function Dashboard() {
         </div>
       </div>
       <div className="panel">
-        <div className="panel-header"><div><h2>Recent Decisions</h2><p>Latest decisions captured by DecisionTrace.</p></div><Link to="/decisions">View all →</Link></div>
+        <div className="panel-header"><div><h2>Recent Decisions</h2><p>Latest decisions captured by DesT.</p></div><Link to="/decisions">View all →</Link></div>
         <div className="table-container"><table><thead><tr><th>ID</th><th>Application</th><th>Status</th><th>Risk</th><th>Created</th></tr></thead><tbody>
           {decisions.slice(0, 8).map((decision) => <tr key={decision._id}><td><Link to={`/decisions/${decision._id}`} className="table-link">{decision.externalDecisionId}</Link></td><td>{decision.application?.name || "Unknown"}</td><td>{decision.status}</td><td><span className={`badge ${decision.riskLevel}`}>{decision.riskLevel}</span></td><td>{new Date(decision.createdAt).toLocaleString()}</td></tr>)}
           {!decisions.length && <tr><td colSpan="5">No decisions recorded yet.</td></tr>}

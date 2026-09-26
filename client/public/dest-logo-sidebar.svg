@@ -1,0 +1,6 @@
+<svg width="190" height="52" viewBox="0 0 190 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="48" height="48" rx="14" fill="#00C2AE"/>
+  <path d="M16 13H27.5C35.5081 13 42 19.4919 42 27.5C42 35.5081 35.5081 42 27.5 42H16V13Z" stroke="white" stroke-width="4"/>
+  <path d="M16 27.5H31" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <text x="62" y="35" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" letter-spacing="-1">DesT</text>
+</svg>

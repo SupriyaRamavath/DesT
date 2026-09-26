@@ -1,206 +1,48 @@
-import {
-  Navigate,
-  Route,
-  Routes,
-} from "react-router";
-
-/* =========================
-   Layouts
-========================= */
-import AuthLayout from "./layouts/AuthLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
-
-/* =========================
-   Common Components
-========================= */
+import { Route, Routes } from "react-router";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-
-/* =========================
-   Authentication Pages
-========================= */
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-
-/* =========================
-   Main Pages
-========================= */
-import Dashboard from "./pages/Dashboard";
+import AuthLayout from "./layouts/AuthLayout";
+import Home from "./pages/Home";
+import LocalDashboard from "./pages/LocalDashboard";
 import Decisions from "./pages/Decisions";
 import DecisionDetails from "./pages/DecisionDetails";
 import DecisionReplay from "./pages/DecisionReplay";
-
+import DecisionIngest from "./pages/DecisionIngest";
 import Applications from "./pages/Applications";
-import ApplicationDetails from "./pages/ApplicationsDetails";
-
+import ApplicationsDetails from "./pages/ApplicationsDetails";
 import Reviews from "./pages/Reviews";
 import ReviewDetails from "./pages/ReviewDetails";
-
-import AuditLogs from "./pages/AuditLogs";
 import Analytics from "./pages/Analytics";
-
-import Profile from "./pages/Profile";
+import AuditLogs from "./pages/AuditLogs";
 import Notifications from "./pages/Notifications";
-
-/* =========================
-   Error Pages
-========================= */
-import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 import Unauthorized from "./pages/Unauthorized";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
     <Routes>
-      {/* ========================================
-          ROOT
-      ======================================== */}
-
-      <Route
-        path="/"
-        element={
-          <Navigate
-            to="/dashboard"
-            replace
-          />
-        }
-      />
-
-      {/* ========================================
-          AUTHENTICATION ROUTES
-      ======================================== */}
-
+      <Route path="/" element={<Home />} />
       <Route element={<AuthLayout />}>
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
-
-      {/* ========================================
-          PROTECTED APPLICATION ROUTES
-      ======================================== */}
-
-      <Route
-        element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }
-      >
-        {/* =========================
-            Dashboard
-        ========================= */}
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        {/* =========================
-            Decisions
-        ========================= */}
-
-        <Route
-          path="/decisions"
-          element={<Decisions />}
-        />
-
-        <Route
-          path="/decisions/:id"
-          element={<DecisionDetails />}
-        />
-
-        <Route
-          path="/decisions/:id/replay"
-          element={<DecisionReplay />}
-        />
-
-        {/* =========================
-            Applications
-        ========================= */}
-
-        <Route
-          path="/applications"
-          element={<Applications />}
-        />
-
-        <Route
-          path="/applications/:id"
-          element={<ApplicationDetails />}
-        />
-
-        {/* =========================
-            Reviews
-        ========================= */}
-
-        <Route
-          path="/reviews"
-          element={<Reviews />}
-        />
-
-        <Route
-          path="/reviews/:id"
-          element={<ReviewDetails />}
-        />
-
-        {/* =========================
-            Analytics
-        ========================= */}
-
-        <Route
-          path="/analytics"
-          element={<Analytics />}
-        />
-
-        {/* =========================
-            Audit Logs
-        ========================= */}
-
-        <Route
-          path="/audit-logs"
-          element={<AuditLogs />}
-        />
-
-        {/* =========================
-            Notifications
-        ========================= */}
-
-        <Route
-          path="/notifications"
-          element={<Notifications />}
-        />
-
-        {/* =========================
-            Profile
-        ========================= */}
-
-        <Route
-          path="/profile"
-          element={<Profile />}
-        />
-      </Route>
-
-      {/* ========================================
-          UNAUTHORIZED
-      ======================================== */}
-
-      <Route
-        path="/unauthorized"
-        element={<Unauthorized />}
-      />
-
-      {/* ========================================
-          404
-      ======================================== */}
-
-      <Route
-        path="*"
-        element={<NotFound />}
-      />
+      <Route path="/dashboard" element={<ProtectedRoute><LocalDashboard /></ProtectedRoute>} />
+      <Route path="/decisions" element={<ProtectedRoute><Decisions /></ProtectedRoute>} />
+      <Route path="/decisions/ingest" element={<ProtectedRoute><DecisionIngest /></ProtectedRoute>} />
+      <Route path="/decisions/:id" element={<ProtectedRoute><DecisionDetails /></ProtectedRoute>} />
+      <Route path="/decisions/:id/replay" element={<ProtectedRoute><DecisionReplay /></ProtectedRoute>} />
+      <Route path="/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
+      <Route path="/applications/:id" element={<ProtectedRoute><ApplicationsDetails /></ProtectedRoute>} />
+      <Route path="/reviews" element={<ProtectedRoute><Reviews /></ProtectedRoute>} />
+      <Route path="/reviews/:id" element={<ProtectedRoute><ReviewDetails /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+      <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

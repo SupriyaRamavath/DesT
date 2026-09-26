@@ -24,7 +24,7 @@ class ErrorBoundary extends Component {
       <main className="empty-page" role="alert">
         <div className="error-code">500</div>
         <h1>Something went wrong</h1>
-        <p>DecisionTrace could not render this page. Try again or return to the dashboard.</p>
+        <p>DesT could not render this page. Try again or return to the dashboard.</p>
         <div className="form-actions">
           <button type="button" className="primary-button" onClick={this.handleReload}>
             Try again

@@ -1,4 +1,4 @@
-# DecisionTrace Testing Plan
+# DesT Testing Plan
 
 **Status:** Test design and execution checklist  
 **Last inspected:** 2026-09-25  
@@ -108,7 +108,7 @@ Run with the project's chosen JS test runner when one is introduced. Until then,
 
 ## 4. API and integration tests
 
-Use the Postman collection in `docs/postman/DecisionTrace.postman_collection.json`. Run requests in order: health, register (or login), create application, list applications, ingest decision, list/detail decisions, then cleanup.
+Use the Postman collection in `docs/postman/DesT.postman_collection.json`. Run requests in order: health, register (or login), create application, list applications, ingest decision, list/detail decisions, then cleanup.
 
 | Test ID | Feature | Input | Expected output | Result criteria |
 |---|---|---|---|---|

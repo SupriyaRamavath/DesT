@@ -1,4 +1,4 @@
-export const APP_NAME = "DecisionTrace";
+export const APP_NAME = "DesT";
 
 export const APP_DESCRIPTION =
   "AI Decision Replay & Audit Platform";

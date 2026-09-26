@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "8d1b3c44-8f2c-4a09-a8b0-decisiontrace",
-    "name": "DecisionTrace API",
-    "description": "Requests for currently registered DecisionTrace Express routes. Requests labeled NOT IMPLEMENTED are intentionally excluded; see TESTING_PLAN.md.",
+    "name": "DesT API",
+    "description": "Requests for currently registered DesT Express routes. Requests labeled NOT IMPLEMENTED are intentionally excluded; see TESTING_PLAN.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

@@ -119,7 +119,7 @@ function ApplicationForm({
         />
       </div>
 
-      <div className="form-actions">
+      <div className="form-actions application-form-actions">
         <button
           type="button"
           className="secondary-button"
@@ -131,7 +131,7 @@ function ApplicationForm({
 
         <button
           type="submit"
-          className="primary-button"
+          className="primary-button action-accent"
           disabled={loading}
         >
           {loading

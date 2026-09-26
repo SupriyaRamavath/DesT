@@ -4,7 +4,7 @@ const { requireRole } = require("../middleware/roleMiddleware");
 const controller = require("../controllers/reviewController");
 
 const router = express.Router();
-router.use(requireAuth, requireRole("admin", "reviewer"));
+router.use(requireAuth, requireRole("admin", "reviewer", "developer"));
 router.get("/", controller.listReviews);
 router.get("/decision/:decisionId", async (req, res, next) => {
   req.query.decision = req.params.decisionId;

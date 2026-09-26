@@ -15,6 +15,11 @@ async function listAuditLogs(req, res, next) {
     const query = await scope(req);
     if (req.query.action) query.action = String(req.query.action).slice(0, 150);
     if (req.query.resourceType) query.resourceType = String(req.query.resourceType).slice(0, 100);
+    if (req.query.from || req.query.to) {
+      query.createdAt = {};
+      if (req.query.from && !Number.isNaN(Date.parse(req.query.from))) query.createdAt.$gte = new Date(req.query.from);
+      if (req.query.to && !Number.isNaN(Date.parse(req.query.to))) query.createdAt.$lte = new Date(req.query.to);
+    }
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
     const logs = await AuditLog.find(query).populate("actor", "name email role").sort({ createdAt: -1 }).limit(limit);
     return res.json({ success: true, data: logs });

@@ -15,7 +15,7 @@ function NotificationProvider({ children }) {
       id: "NOT-002",
       title: "Application connected",
       message:
-        "Fraud Detection has successfully connected to DecisionTrace.",
+        "Fraud Detection has successfully connected to DesT.",
       type: "success",
       read: false,
       createdAt: new Date().toISOString(),

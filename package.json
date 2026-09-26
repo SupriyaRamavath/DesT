@@ -1,8 +1,8 @@
 {
-  "name": "decisiontrace",
+  "name": "dest",
   "private": true,
   "version": "1.0.0",
-  "description": "DecisionTrace AI Decision Replay & Audit Platform",
+  "description": "DesT AI Decision Replay & Audit Platform",
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",
     "check": "npm run check --prefix server",
@@ -10,5 +10,8 @@
     "build": "npm run build --prefix client",
     "start": "npm start --prefix server",
     "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
   }
 }

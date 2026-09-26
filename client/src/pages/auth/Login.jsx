@@ -39,7 +39,7 @@ function Login() {
       <div className="auth-header">
         <h1>Welcome back</h1>
         <p>
-          Sign in to your DecisionTrace account.
+          Sign in to your DesT account.
         </p>
       </div>
 

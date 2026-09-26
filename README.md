@@ -1,18 +1,18 @@
-# DecisionTrace
+# DesT
 
 AI Decision Replay & Audit Platform
 
 ## Project overview
 
-DecisionTrace is a MERN application for capturing AI decision traces, preserving the events and evidence behind each outcome, and presenting that information for audit and human review. It is designed as a final-year project demonstration and as a foundation for production-grade AI observability.
+DesT is a MERN application for capturing AI decision traces, preserving the events and evidence behind each outcome, and presenting that information for audit and human review. It is designed as a final-year project demonstration and as a foundation for production-grade AI observability.
 
-The repository contains a React/Vite client, an Express/Mongoose API, authentication flows, application and decision persistence, seed data, deployment documentation, and API testing documentation. Some planned modules are represented by frontend pages and models but are not yet fully connected to backend routes; those limitations are called out here rather than hidden.
+The repository contains a React/Vite client, an Express/Mongoose API, authentication flows, application and decision persistence, seed data, and API testing documentation. Some planned modules are represented by frontend pages and models but are not yet fully connected to backend routes; those limitations are called out here rather than hidden.
 
 ## Problem statement
 
 AI systems often produce outcomes without making the reasoning process, supporting evidence, risk level, or human intervention easy to inspect. This makes debugging, compliance review, incident investigation, and accountability difficult.
 
-DecisionTrace addresses this by storing a decision together with its ordered processing events, application context, evidence, review history, and audit metadata.
+DesT addresses this by storing a decision together with its ordered processing events, application context, evidence, review history, and audit metadata.
 
 ## Objectives
 
@@ -21,7 +21,7 @@ DecisionTrace addresses this by storing a decision together with its ordered pro
 - Support controlled human review workflows.
 - Provide application-level ownership and authenticated access.
 - Create a foundation for analytics, notifications, and real-time monitoring.
-- Keep production deployment and secret handling explicit.
+- Keep local configuration and secret handling explicit.
 
 ## Features
 
@@ -37,7 +37,6 @@ DecisionTrace addresses this by storing a decision together with its ordered pro
 - Centralized backend error formatting.
 - Frontend error boundary and responsive dashboard styling.
 - Postman collection and testing plan.
-- Production deployment guide.
 
 ### Planned or incomplete
 
@@ -62,7 +61,7 @@ Express API (Node.js)
 MongoDB / MongoDB Atlas
 ```
 
-The client stores the current user and bearer token for the current prototype. The backend owns database access, authentication verification, and error responses. Production deployment details are documented in [DEPLOYMENT.md](./DEPLOYMENT.md).
+The client stores the current user and bearer token for the current prototype. The backend owns database access, authentication verification, and error responses.
 
 ## Technology stack
 
@@ -90,7 +89,7 @@ The client stores the current user and bearer token for the current prototype. T
 ## Folder structure
 
 ```text
-DecisionTrace/
+DesT/
 ├── client/
 │   ├── public/
 │   ├── src/
@@ -117,7 +116,6 @@ DecisionTrace/
 ├── docs/
 │   ├── TESTING_PLAN.md
 │   └── postman/
-├── DEPLOYMENT.md
 ├── README.md
 ├── .gitignore
 └── package.json
@@ -187,7 +185,7 @@ VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 ```
 
-Only non-sensitive configuration may use the `VITE_` prefix because Vite embeds those values into browser assets. See [DEPLOYMENT.md](./DEPLOYMENT.md) for production configuration.
+Only non-sensitive configuration may use the `VITE_` prefix because Vite embeds those values into browser assets.
 
 ## Database setup
 
@@ -201,7 +199,7 @@ mongodb://127.0.0.1:27017/decisiontrace
 
 ### MongoDB Atlas
 
-Create a cluster, create a least-privilege database user, allow the backend deployment's IP range, and store the Atlas SRV URI only in the backend environment. Do not place database credentials in source code.
+Create a cluster, create a least-privilege database user, and store the Atlas SRV URI only in the backend environment. Do not place database credentials in source code.
 
 ### Seed fictional data
 
@@ -277,7 +275,7 @@ docs/screenshots/application-management.png
 Example:
 
 ```markdown
-![DecisionTrace dashboard](./docs/screenshots/dashboard.png)
+![DesT dashboard](./docs/screenshots/dashboard.png)
 ```
 
 Screenshots are intentionally not fabricated in this repository.
@@ -294,20 +292,6 @@ npm run build
 
 The complete testing strategy, test IDs, expected results, manual cases, and current blocked areas are documented in [docs/TESTING_PLAN.md](./docs/TESTING_PLAN.md).
 
-## Deployment
-
-The production deployment process is documented in [DEPLOYMENT.md](./DEPLOYMENT.md), including MongoDB Atlas, backend/frontend hosting, CORS, environment variables, build/start commands, and common deployment errors.
-
-Typical production commands:
-
-```powershell
-npm ci
-npm run build
-npm start
-```
-
-The frontend is published from `client/dist`; the backend runs as a separate Node service.
-
 ## Future enhancements
 
 - Complete RBAC enforcement on every server route.
@@ -323,7 +307,7 @@ The frontend is published from `client/dist`; the backend runs as a separate Nod
 
 ## Contributors
 
-DecisionTrace is currently maintained by the project owner and contributors working through GitHub pull requests.
+DesT is currently maintained by the project owner and contributors working through GitHub pull requests.
 
 To contribute, create a focused branch, make a tested change, update related documentation, and open a pull request with validation results.
 
@@ -345,7 +329,7 @@ Review `git status` carefully. Confirm that no `.env` file, credential, token, d
 ### First commit
 
 ```powershell
-git commit -m "Initial DecisionTrace project"
+git commit -m "Initial DesT project"
 ```
 
 ### Branch strategy

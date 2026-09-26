@@ -75,7 +75,7 @@ function DashboardLayout() {
             <div className="logo-mark">D</div>
 
             <div className="logo-text">
-              <h2>DecisionTrace</h2>
+              <h2>DesT</h2>
               <span>AI Decision Audit</span>
             </div>
           </Link>
@@ -165,7 +165,7 @@ function DashboardLayout() {
         {/* Top Header */}
         <header className="dashboard-header">
           <div className="header-left">
-            <h1>DecisionTrace</h1>
+            <h1>DesT</h1>
             <span className="header-divider">/</span>
 
             <span className="current-page">
