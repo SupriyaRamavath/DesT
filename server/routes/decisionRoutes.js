@@ -69,7 +69,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.post("/ingest", async (req, res, next) => {
-  const session = await mongoose.startSession();
   try {
     const body = req.body || {};
     const applicationId = body.applicationId || body.application;
@@ -89,8 +88,8 @@ router.post("/ingest", async (req, res, next) => {
       return res.status(400).json({ success: false, message: "riskLevel is invalid." });
     }
 
-    let response;
-    await session.withTransaction(async () => {
+    async function performIngest(session) {
+      const sessionOpt = session ? { session } : {};
       let applicationQuery = { _id: applicationId, status: "active" };
       const authorization = req.headers.authorization || "";
       if (authorization.startsWith("Bearer ")) {
@@ -100,16 +99,19 @@ router.post("/ingest", async (req, res, next) => {
         } catch {
           throw requestError(401, "Invalid or expired session.");
         }
-        const user = await User.findById(payload.sub).select("_id isActive").session(session);
+        const user = await User.findById(payload.sub).select("_id role isActive").session(session || null);
         if (!user || !user.isActive) throw requestError(401, "Invalid or inactive session.");
         req.user = user;
-        applicationQuery.owner = user._id;
+        if (user.role !== "admin") {
+          applicationQuery.owner = user._id;
+        }
       } else if (req.headers["x-api-key"]) {
         applicationQuery.apiKeyHash = crypto.createHash("sha256").update(req.headers["x-api-key"]).digest("hex");
       } else {
         throw requestError(401, "Bearer token or application API key is required.");
       }
-      const application = await AIApplication.findOne(applicationQuery).session(session);
+
+      const application = await AIApplication.findOne(applicationQuery).session(session || null);
       if (!application) {
         const error = new Error("Application not found or inactive.");
         error.statusCode = 404;
@@ -132,7 +134,7 @@ router.post("/ingest", async (req, res, next) => {
         model: body.model || {},
         startedAt: body.startedAt || new Date(),
         completedAt: body.completedAt || new Date(),
-      }], { session });
+      }], sessionOpt);
 
       const events = (body.events || []).map((event, index) => ({
         decision: decision._id,
@@ -144,7 +146,8 @@ router.post("/ingest", async (req, res, next) => {
         timestamp: event.timestamp || new Date(),
         durationMs: event.duration ?? null,
       }));
-      if (events.length) await DecisionEvent.insertMany(events, { session });
+      if (events.length) await DecisionEvent.insertMany(events, sessionOpt);
+
       if (Array.isArray(body.evidence) && body.evidence.length) {
         const evidence = body.evidence.map((item) => ({
           decision: decision._id,
@@ -154,17 +157,45 @@ router.post("/ingest", async (req, res, next) => {
           relevanceScore: item.reliability ?? null,
           metadata: item.metadata || null,
         }));
-        await Evidence.insertMany(evidence, { session });
+        await Evidence.insertMany(evidence, sessionOpt);
       }
+
       await AuditLog.create([{
         actor: application.owner,
         action: "decision_ingested",
         resourceType: "Decision",
         resourceId: decision._id,
         metadata: { application: application._id, eventCount: events.length },
-      }], { session });
-      response = { decision, events };
-    });
+      }], sessionOpt);
+
+      return { decision, events };
+    }
+
+    let response;
+    try {
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          response = await performIngest(session);
+        });
+      } finally {
+        await session.endSession();
+      }
+    } catch (txError) {
+      if (
+        txError.statusCode ||
+        txError.code === 11000 ||
+        (txError.message &&
+          !txError.message.includes("replica set") &&
+          !txError.message.includes("Transaction numbers") &&
+          !txError.message.includes("This MongoDB deployment does not support"))
+      ) {
+        throw txError;
+      }
+      // Standalone MongoDB fallback
+      response = await performIngest(null);
+    }
+
     req.app.get("io")?.to(`user:${response.decision.createdBy}`).emit("decision:created", {
       decisionId: response.decision._id,
       applicationId: response.decision.application,
@@ -175,8 +206,6 @@ router.post("/ingest", async (req, res, next) => {
       return res.status(409).json({ success: false, message: "externalDecisionId already exists for this application." });
     }
     return next(error);
-  } finally {
-    await session.endSession();
   }
 });
 

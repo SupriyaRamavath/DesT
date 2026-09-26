@@ -140,31 +140,65 @@ async function changeStatus(req, res, next, status) {
 
 router.delete("/:id", async (req, res, next) => {
   try {
-    const session = await mongoose.startSession();
-    let app;
-    try {
-      await session.withTransaction(async () => {
-        app = await AIApplication.findOne({ _id: req.params.id, ...(req.user.role === "admin" ? {} : { owner: req.user._id }) }).session(session);
-        if (!app) {
-          const error = new Error("Application not found.");
-          error.statusCode = 404;
-          throw error;
-        }
-        const decisions = await Decision.find({ application: app._id }).select("_id").session(session);
-        const decisionIds = decisions.map((decision) => decision._id);
-        await Promise.all([
-          DecisionEvent.deleteMany({ decision: { $in: decisionIds } }, { session }),
-          Evidence.deleteMany({ decision: { $in: decisionIds } }, { session }),
-          HumanReview.deleteMany({ decision: { $in: decisionIds } }, { session }),
-          Notification.deleteMany({ relatedDecision: { $in: decisionIds } }, { session }),
-          AuditLog.create([{ actor: req.user._id, action: "application_deleted", resourceType: "AIApplication", resourceId: app._id, metadata: { decisionCount: decisionIds.length } }], { session }),
-          Decision.deleteMany({ application: app._id }, { session }),
-          AIApplication.deleteOne({ _id: app._id }, { session }),
-        ]);
-      });
-    } finally {
-      await session.endSession();
+    async function performDelete(session) {
+      const sessionOpt = session ? { session } : {};
+      const app = await AIApplication.findOne({
+        _id: req.params.id,
+        ...(req.user.role === "admin" ? {} : { owner: req.user._id }),
+      }).session(session || null);
+
+      if (!app) {
+        const error = new Error("Application not found.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      const decisions = await Decision.find({ application: app._id }).select("_id").session(session || null);
+      const decisionIds = decisions.map((decision) => decision._id);
+
+      await Promise.all([
+        DecisionEvent.deleteMany({ decision: { $in: decisionIds } }, sessionOpt),
+        Evidence.deleteMany({ decision: { $in: decisionIds } }, sessionOpt),
+        HumanReview.deleteMany({ decision: { $in: decisionIds } }, sessionOpt),
+        Notification.deleteMany({ relatedDecision: { $in: decisionIds } }, sessionOpt),
+        AuditLog.create(
+          [{
+            actor: req.user._id,
+            action: "application_deleted",
+            resourceType: "AIApplication",
+            resourceId: app._id,
+            metadata: { decisionCount: decisionIds.length },
+          }],
+          sessionOpt
+        ),
+        Decision.deleteMany({ application: app._id }, sessionOpt),
+        AIApplication.deleteOne({ _id: app._id }, sessionOpt),
+      ]);
     }
+
+    try {
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          await performDelete(session);
+        });
+      } finally {
+        await session.endSession();
+      }
+    } catch (txError) {
+      if (
+        txError.statusCode === 404 ||
+        (txError.message &&
+          !txError.message.includes("replica set") &&
+          !txError.message.includes("Transaction numbers") &&
+          !txError.message.includes("This MongoDB deployment does not support"))
+      ) {
+        throw txError;
+      }
+      // Non-replica set fallback
+      await performDelete(null);
+    }
+
     return res.json({ success: true });
   } catch (error) {
     return next(error);

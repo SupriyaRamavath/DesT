@@ -5,11 +5,16 @@
   "description": "DesT AI Decision Replay & Audit Platform",
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",
+    "postinstall": "npm --prefix server install",
     "check": "npm run check --prefix server",
     "lint": "npm run lint --prefix client",
     "build": "npm run build --prefix client",
+    "build:server": "npm --prefix server install --omit=dev",
     "start": "npm start --prefix server",
     "seed": "npm run seed --prefix server"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "devDependencies": {
     "vite": "^8.3.1"
